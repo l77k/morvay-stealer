@@ -1,0 +1,56 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package org.bouncycastle.pqc.jcajce.provider.mceliece;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.pqc.jcajce.provider.mceliece.BCMcEliecePrivateKey;
+import org.bouncycastle.pqc.jcajce.provider.mceliece.BCMcEliecePublicKey;
+import org.bouncycastle.pqc.jcajce.spec.McElieceKeyGenParameterSpec;
+import org.bouncycastle.pqc.legacy.crypto.mceliece.McElieceKeyGenerationParameters;
+import org.bouncycastle.pqc.legacy.crypto.mceliece.McElieceKeyPairGenerator;
+import org.bouncycastle.pqc.legacy.crypto.mceliece.McElieceParameters;
+import org.bouncycastle.pqc.legacy.crypto.mceliece.McEliecePrivateKeyParameters;
+import org.bouncycastle.pqc.legacy.crypto.mceliece.McEliecePublicKeyParameters;
+
+public class McElieceKeyPairGeneratorSpi
+extends KeyPairGenerator {
+    McElieceKeyPairGenerator kpg;
+
+    public McElieceKeyPairGeneratorSpi() {
+        super("McEliece");
+    }
+
+    @Override
+    public void initialize(AlgorithmParameterSpec algorithmParameterSpec, SecureRandom secureRandom) throws InvalidAlgorithmParameterException {
+        this.kpg = new McElieceKeyPairGenerator();
+        McElieceKeyGenParameterSpec mcElieceKeyGenParameterSpec = (McElieceKeyGenParameterSpec)algorithmParameterSpec;
+        McElieceKeyGenerationParameters mcElieceKeyGenerationParameters = new McElieceKeyGenerationParameters(secureRandom, new McElieceParameters(mcElieceKeyGenParameterSpec.getM(), mcElieceKeyGenParameterSpec.getT()));
+        this.kpg.init(mcElieceKeyGenerationParameters);
+    }
+
+    @Override
+    public void initialize(int n2, SecureRandom secureRandom) {
+        McElieceKeyGenParameterSpec mcElieceKeyGenParameterSpec = new McElieceKeyGenParameterSpec();
+        try {
+            this.initialize(mcElieceKeyGenParameterSpec, secureRandom);
+        }
+        catch (InvalidAlgorithmParameterException invalidAlgorithmParameterException) {
+            // empty catch block
+        }
+    }
+
+    @Override
+    public KeyPair generateKeyPair() {
+        AsymmetricCipherKeyPair asymmetricCipherKeyPair = this.kpg.generateKeyPair();
+        McEliecePrivateKeyParameters mcEliecePrivateKeyParameters = (McEliecePrivateKeyParameters)asymmetricCipherKeyPair.getPrivate();
+        McEliecePublicKeyParameters mcEliecePublicKeyParameters = (McEliecePublicKeyParameters)asymmetricCipherKeyPair.getPublic();
+        return new KeyPair(new BCMcEliecePublicKey(mcEliecePublicKeyParameters), new BCMcEliecePrivateKey(mcEliecePrivateKeyParameters));
+    }
+}
+
